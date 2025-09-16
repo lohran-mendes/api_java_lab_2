@@ -9,7 +9,7 @@ import java.util.Map;
 public class ProductController {
     private static final String resource = "products";
 
-    private static Map<String, Product> productsList = new HashMap<>();
+    public static Map<String, Product> productsList = new HashMap<>();
 
     public static void config(Javalin app) {
 
@@ -36,24 +36,26 @@ public class ProductController {
     }
 
     public static void getConnection(Context ctx) {
-        ctx
-                .status(200)
-                .result("Conexão ok!");
+        ctx.status(200);
+        ctx.result("Conexão ok!");
     }
 
     public static void getProducts(Context ctx) {
-        ctx
-                .status(200)
-                .json(productsList);
+        ctx.status(200);
+        ctx.json(productsList);
     }
 
     public static void getProductById(Context ctx) {
-        String id = ctx
-                .pathParam("id");
+        String id = ctx.pathParam("id");
 
-        ctx
-                .status(200)
-                .result("produto consultado pelo ID: " + id);
+        Product product = productsList.get(id);
+        if (product != null) {
+        ctx.status(200);
+        ctx.json(product);
+        } else {
+            ctx.status(404);
+            ctx.result("Produto não encontrado.");
+        }
     }
 
     public static void insertProduct(Context ctx) {
