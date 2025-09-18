@@ -3,18 +3,10 @@ package edu.infnet;
 public class Product {
     private String id;
     private String name;
-    private double price;
-    private int quantity;
+    private Double price;
+    private Integer quantity;
 
-    public Product() {}
-
-    public Product(String name, double price, int quantity) {
-        this.name = name;
-        this.price = price;
-        this.quantity = quantity;
-    }
-
-    public Product(String id, String name, double price, int quantity) {
+    public Product(String id, String name, Double price, Integer quantity) {
         this.id = id;
         this.name = name;
         this.price = price;
@@ -29,11 +21,15 @@ public class Product {
         return name;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public int getQuantity() {
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Integer getQuantity() {
         return quantity;
     }
 
@@ -41,11 +37,11 @@ public class Product {
         this.name = name;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(Integer quantity) {
         this.quantity = quantity;
     }
 

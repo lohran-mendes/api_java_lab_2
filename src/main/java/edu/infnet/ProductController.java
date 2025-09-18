@@ -3,6 +3,7 @@ package edu.infnet;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 
+import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ public class ProductController {
     private static final String resource = "products";
 
     public static Map<String, Product> productsList = new HashMap<>();
+    private static int lastId = 0;
 
     public static void config(Javalin app) {
 
@@ -46,48 +48,107 @@ public class ProductController {
     }
 
     public static void getProductById(Context ctx) {
-        String id = ctx.pathParam("id");
+        try {
 
-        Product product = productsList.get(id);
-        if (product != null) {
-        ctx.status(200);
-        ctx.json(product);
-        } else {
-            ctx.status(404);
-            ctx.result("Produto não encontrado.");
+            String id = ctx.pathParam("id");
+
+            Product product = productsList.get(id);
+            if (product != null) {
+                ctx.status(200);
+                ctx.json(product);
+            } else {
+                ctx.status(404);
+                ctx.result("Produto não encontrado.");
+            }
+        } catch (Exception e) {
+            ctx.status(400);
+            ctx.result("Erro ao buscar o produto.");
         }
     }
 
     public static void insertProduct(Context ctx) {
-        ctx
-                .status(200)
-                .result("Produto inserido.");
+        try {
+            Product produto = ctx.bodyAsClass(Product.class);
+            produto.setId(Integer.toString(lastId));
+
+            productsList.put(Integer.toString(lastId), produto);
+            ctx.status(200);
+            ctx.result("Produto inserido.");
+            lastId++;
+        } catch (Exception ex) {
+            ctx.status(400);
+            ctx.result("Erro ao inserir produto.");
+        }
     }
 
     public static void updateProduct(Context ctx) {
-        String id = ctx
-                .pathParam("id");
+        try {
+            String id = ctx.pathParam("id");
+            Product newProduct = ctx.bodyAsClass(Product.class);
+            newProduct.setId(id);
 
-        ctx
-                .status(200)
-                .result("produto atualizado.");
+            if (!productsList.containsKey(id)) {
+                ctx.status(404);
+                ctx.result("Produto não encontrado.");
+                return;
+            }
+
+            productsList.replace(id, newProduct);
+            ctx.status(200);
+            ctx.result("produto atualizado.");
+        } catch (Exception e) {
+            ctx.status(400);
+            ctx.result("Erro ao atualizar o produto.");
+        }
     }
 
     public static void deleteProduct(Context ctx) {
-        String id = ctx
-                .pathParam("id");
+        try {
+            String id = ctx.pathParam("id");
 
-        ctx
-                .status(200)
-                .result("Produto deletado.");
+            Product product = productsList.get(id);
+            if (product != null) {
+                productsList.remove(id);
+                ctx.status(HttpURLConnection.HTTP_NO_CONTENT);
+            } else {
+                ctx.status(HttpURLConnection.HTTP_NOT_FOUND);
+                ctx.result("Produto não encontrado.");
+            }
+        } catch (Exception e) {
+            ctx.status(HttpURLConnection.HTTP_BAD_REQUEST);
+            ctx.result("Erro ao buscar o produto.");
+        }
     }
 
     public static void patchProduct(Context ctx) {
-        String id = ctx
-                .pathParam("id");
+        try {
+            String id = ctx.pathParam("id");
 
-        ctx
-                .status(200)
-                .result("Produto atualizado parcialmente.");
+            Product newProduct = ctx.bodyAsClass(Product.class);
+            Product existingProduct = productsList.get(id);
+
+            if (existingProduct == null) {
+                ctx.status(404);
+                ctx.result("Produto não encontrado.");
+                return;
+            }
+
+            if (newProduct.getName() != null) {
+                existingProduct.setName(newProduct.getName());
+            }
+            if (newProduct.getPrice() != null) {
+                existingProduct.setPrice(newProduct.getPrice());
+            }
+            if (newProduct.getQuantity() != null) {
+                existingProduct.setQuantity(newProduct.getQuantity());
+            }
+
+            productsList.replace(existingProduct.getId(), existingProduct);
+            ctx.status(200);
+            ctx.result("Produto atualizado parcialmente.");
+        } catch (Exception e) {
+            ctx.status(400);
+            ctx.result("Erro ao atualizar o produto.");
+        }
     }
 }
